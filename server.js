@@ -15,7 +15,7 @@ app.get("/", (req, res) => {
 app.post("/create-order", async (req, res) => {
   try {
     const response = await fetch(
-      "https://sandbox.cashfree.com/pg/orders",
+      "https://api.cashfree.com/pg/orders",
       {
         method: "POST",
         headers: {
