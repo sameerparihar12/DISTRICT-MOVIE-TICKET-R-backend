@@ -25,18 +25,18 @@ app.post("/create-order", async (req, res) => {
           "x-api-version": "2023-08-01"
         },
         body: JSON.stringify({
-          order_amount: req.body.orderAmount,
-          order_currency: "INR",
-          customer_details: {
-            customer_id: "cust_" + Date.now(),
-            customer_name: req.body.customerName,
-            customer_email: req.body.customerEmail,
-            customer_phone: req.body.customerPhone
-          },
-          order_note: req.body.orderNote
-        })
-      }
-    );
+  order_id: "order_" + Date.now(),   // ✅ REQUIRED FOR LIVE
+  order_amount: req.body.orderAmount,
+  order_currency: "INR",
+  customer_details: {
+    customer_id: "cust_" + Date.now(),
+    customer_name: req.body.customerName,
+    customer_email: req.body.customerEmail,
+    customer_phone: req.body.customerPhone
+  },
+  order_note: req.body.orderNote
+})
+
 
     const data = await response.json();
 
