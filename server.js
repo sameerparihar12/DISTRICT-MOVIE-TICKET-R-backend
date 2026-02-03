@@ -3,59 +3,56 @@ import fetch from "node-fetch";
 import cors from "cors";
 
 const app = express();
-app.use(express.json());
+
 app.use(cors());
+app.use(express.json());
 
-// 🔑 CASHFREE KEYS (CHANGE THESE)
-const CASHFREE_APP_ID = "YOUR_APP_ID_HERE";
-const CASHFREE_SECRET_KEY = "YOUR_SECRET_KEY_HERE";
-const CASHFREE_MODE = "sandbox"; // change to "production" when live
-
-const CASHFREE_URL =
-  CASHFREE_MODE === "sandbox"
-    ? "https://sandbox.cashfree.com/pg/orders"
-    : "https://api.cashfree.com/pg/orders";
+// ✅ Root test route
+app.get("/", (req, res) => {
+  res.send("Jaagat Talkis backend running");
+});
 
 app.post("/create-order", async (req, res) => {
   try {
-    const {
-      orderAmount,
-      customerEmail,
-      customerName,
-      customerPhone,
-      orderNote
-    } = req.body;
-
-    const response = await fetch(CASHFREE_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-client-id": CASHFREE_APP_ID,
-        "x-client-secret": CASHFREE_SECRET_KEY,
-        "x-api-version": "2023-08-01"
-      },
-      body: JSON.stringify({
-        order_amount: orderAmount,
-        order_currency: "INR",
-        customer_details: {
-          customer_id: "cust_" + Date.now(),
-          customer_email: customerEmail,
-          customer_phone: customerPhone,
-          customer_name: customerName
+    const response = await fetch(
+      "https://sandbox.cashfree.com/pg/orders",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-client-id": process.env.CASHFREE_APP_ID,
+          "x-client-secret": process.env.CASHFREE_SECRET_KEY,
+          "x-api-version": "2023-08-01"
         },
-        order_note: orderNote
-      })
-    });
+        body: JSON.stringify({
+          order_amount: req.body.orderAmount,
+          order_currency: "INR",
+          customer_details: {
+            customer_id: "cust_" + Date.now(),
+            customer_name: req.body.customerName,
+            customer_email: req.body.customerEmail,
+            customer_phone: req.body.customerPhone
+          },
+          order_note: req.body.orderNote
+        })
+      }
+    );
 
     const data = await response.json();
+
+    // 🔴 PRINT EXACT CASHFREE RESPONSE
+    console.log("===== CASHFREE RESPONSE START =====");
+    console.log(JSON.stringify(data, null, 2));
+    console.log("===== CASHFREE RESPONSE END =====");
+
     res.json(data);
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Order creation failed" });
+    console.error("SERVER ERROR:", error);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
 app.listen(3000, () => {
-  console.log("✅ Backend running on http://localhost:3000");
+  console.log("Backend running on port 3000");
 });
