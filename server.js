@@ -9,7 +9,7 @@ app.use(express.json());
 
 // ✅ Root test route
 app.get("/", (req, res) => {
-  res.send("Jaagat Talkis backend running");
+  res.send("Manish says Good job 😎 backend running");
 });
 
 app.post("/create-order", async (req, res) => {
