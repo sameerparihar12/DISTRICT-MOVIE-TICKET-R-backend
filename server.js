@@ -4,77 +4,61 @@ import cors from "cors";
 
 const app = express();
 
-/* ================================
-   ANDROID-SAFE CORS (VERY IMPORTANT)
-================================ */
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type"]
-}));
-app.options("*", cors());
-
+app.use(cors());
 app.use(express.json());
 
-/* ================================
-   TEST ROUTE (OPTIONAL)
-================================ */
+/* =========================
+   TEST ROUTE
+========================= */
 app.get("/", (req, res) => {
-  res.send("Manish sahu says 😎 Backend running successfully");
+  res.send("Backend running");
 });
 
-/* ================================
-   CREATE CASHFREE ORDER (LIVE)
-================================ */
-app.post("/create-order", async (req, res) => {
+/* =========================
+   CREATE PAYMENT LINK
+========================= */
+app.post("/create-payment-link", async (req, res) => {
   try {
+    const { amount, email, phone } = req.body;
+
     const response = await fetch(
-      "https://api.cashfree.com/pg/orders", // 🔴 LIVE URL
+      "https://api.cashfree.com/api/v2/payment-links",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "x-client-id": process.env.CASHFREE_APP_ID,        // LIVE APP ID
-          "x-client-secret": process.env.CASHFREE_SECRET_KEY, // LIVE SECRET
-          "x-api-version": "2023-08-01"
+          "x-client-secret": process.env.CASHFREE_SECRET_KEY // LIVE SECRET
         },
         body: JSON.stringify({
-          // 🔴 UNIQUE ORDER ID (MANDATORY)
-          order_id: "order_" + Date.now() + "_" + Math.floor(Math.random() * 10000),
-
-          order_amount: req.body.orderAmount,
-          order_currency: "INR",
-
+          link_amount: amount,
+          link_currency: "INR",
+          link_purpose: "Movie Ticket",
           customer_details: {
-            customer_id: "cust_" + Date.now(),
-            customer_name: req.body.customerName,
-            customer_email: req.body.customerEmail,
-            customer_phone: req.body.customerPhone
+            customer_email: email,
+            customer_phone: phone
           },
-
-          order_note: req.body.orderNote
+          link_notify: {
+            send_email: true,
+            send_sms: true
+          }
         })
       }
     );
 
     const data = await response.json();
-
-    console.log("===== CASHFREE RESPONSE START =====");
-    console.log(JSON.stringify(data, null, 2));
-    console.log("===== CASHFREE RESPONSE END =====");
-
     res.json(data);
 
-  } catch (error) {
-    console.error("SERVER ERROR:", error);
-    res.status(500).json({ error: "Server error" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Payment link failed" });
   }
 });
 
-/* ================================
-   PORT (RENDER SAFE)
-================================ */
+/* =========================
+   PORT
+========================= */
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Backend running on port ${PORT}`);
+  console.log("Backend running on port", PORT);
 });
