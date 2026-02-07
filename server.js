@@ -3,39 +3,16 @@ import fetch from "node-fetch";
 import cors from "cors";
 
 const app = express();
-
-/* =====================
-   CORS (IMPORTANT)
-===================== */
-app.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type"]
-}));
-app.options("*", cors());
-
+app.use(cors());
 app.use(express.json());
 
-/* =====================
-   TEST ROUTE
-===================== */
 app.get("/", (req, res) => {
-  res.send("Backend running");
+  res.send("Backend running ✅");
 });
 
-app.post("/ping", (req, res) => {
-  console.log("PING HIT");
-  res.json({ ok: true });
-});
-
-/* =====================
-   CREATE CASHFREE ORDER
-===================== */
 app.post("/create-order", async (req, res) => {
   try {
-    const { amount, email, phone } = req.body;
-
-    console.log("CREATE ORDER HIT", amount, email);
+    console.log("CREATE ORDER HIT", req.body.customerEmail);
 
     const response = await fetch(
       "https://api.cashfree.com/pg/orders",
@@ -48,34 +25,31 @@ app.post("/create-order", async (req, res) => {
           "x-api-version": "2023-08-01"
         },
         body: JSON.stringify({
-          order_id: "order_" + Date.now(),
-          order_amount: amount,
+          order_amount: req.body.orderAmount,
           order_currency: "INR",
           customer_details: {
             customer_id: "cust_" + Date.now(),
-            customer_email: email,
-            customer_phone: phone,
-            customer_name: "Movie Ticket Customer"
-          }
+            customer_name: req.body.customerName,
+            customer_email: req.body.customerEmail,
+            customer_phone: req.body.customerPhone
+          },
+          order_note: req.body.orderNote
         })
       }
     );
 
     const data = await response.json();
-    console.log("CASHFREE RESPONSE:", data);
 
+    console.log("CASHFREE RESPONSE:", data);
     res.json(data);
 
   } catch (err) {
     console.error("SERVER ERROR:", err);
-    res.status(500).json({ error: "Order failed" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-/* =====================
-   PORT
-===================== */
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log("Server running on", PORT);
-});
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () =>
+  console.log(`Server running on ${PORT}`)
+);
