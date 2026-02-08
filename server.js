@@ -3,7 +3,6 @@ import fetch from "node-fetch";
 import cors from "cors";
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
@@ -13,7 +12,7 @@ app.get("/", (req, res) => {
 
 app.post("/create-order", async (req, res) => {
   try {
-    const { orderAmount, customerEmail, customerName, customerPhone } = req.body;
+    const { orderAmount, customerEmail, customerName, customerPhone, orderNote } = req.body;
 
     console.log("CREATE ORDER HIT", customerEmail);
 
@@ -33,10 +32,11 @@ app.post("/create-order", async (req, res) => {
           order_currency: "INR",
           customer_details: {
             customer_id: "cust_" + Date.now(),
-            customer_name: customerName,
             customer_email: customerEmail,
-            customer_phone: customerPhone
-          }
+            customer_phone: customerPhone,
+            customer_name: customerName
+          },
+          order_note: orderNote
         })
       }
     );
